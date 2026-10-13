@@ -34,7 +34,6 @@ export const MOCK_MOVIES: Movie[] = [
   { id: 483, title: "Casablanca", year: 1942, genres: ["Drama", "Romance", "War"], overview: "A cynical nightclub owner must choose between love and helping his former lover escape the Nazis." },
   { id: 588, title: "Beauty and the Beast", year: 1991, genres: ["Animation", "Children", "Musical"], overview: "A young woman's father is imprisoned by a beast, and she offers herself in his place." },
   { id: 603, title: "Rear Window", year: 1954, genres: ["Mystery", "Thriller"], overview: "A wheelchair-bound photographer spies on his neighbors and becomes convinced one of them committed murder." },
-  { id: 1, title: "", year: 0, genres: [] },
-].filter((m) => m.title);
+];
 
 export const POPULAR_IDS = [50001, 56, 64, 98, 127, 172, 1, 82, 100, 69, 174, 313];
