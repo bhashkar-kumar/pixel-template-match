@@ -3,11 +3,11 @@ import { MovieCard, MovieCardSkeleton } from "./MovieCard";
 import { ErrorState } from "./StateViews";
 
 interface Props {
-  movies?: Movie[];
+  movies?: Movie[] | undefined;
   isLoading: boolean;
-  error?: Error | null;
-  onRetry?: () => void;
-  onSelect?: (m: Movie) => void;
+  error?: Error | null | undefined;
+  onRetry?: (() => void) | undefined;
+  onSelect?: ((m: Movie) => void) | undefined;
   label: string;
 }
 

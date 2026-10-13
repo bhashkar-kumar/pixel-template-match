@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface Props {
   movie: Movie;
-  onSelect?: (movie: Movie) => void;
+  onSelect?: ((movie: Movie) => void) | undefined;
   footer?: ReactNode;
 }
 

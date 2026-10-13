@@ -7,7 +7,7 @@ const HUES = [20, 45, 70, 200, 260, 330, 150];
 export function MoviePoster({ movie, className }: { movie: Movie; className?: string }) {
   const [failed, setFailed] = useState(false);
   const showImg = movie.poster_url && !failed;
-  const hue = HUES[movie.id % HUES.length];
+  const hue = HUES[movie.id % HUES.length] ?? 45;
 
   return (
     <div className={cn("relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-muted", className)}>
