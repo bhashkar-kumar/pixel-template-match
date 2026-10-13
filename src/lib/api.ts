@@ -1,7 +1,7 @@
 import type { Movie, Rating } from "@/types/movie";
 import { MOCK_MOVIES, POPULAR_IDS } from "@/lib/mock-data";
 
-const API_URL = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ?? "";
+const API_URL = (import.meta.env["VITE_API_URL"] as string | undefined)?.replace(/\/$/, "") ?? "";
 
 /** True when no backend URL is configured and mock data is used. */
 export const IS_MOCK = !API_URL;
@@ -53,7 +53,7 @@ export async function getRecommendationsForUser(userId: number, n = 10): Promise
   const rand = seeded(userId * 7919);
   const genres = new Map<string, number>();
   const all = Array.from(new Set(MOCK_MOVIES.flatMap((m) => m.genres)));
-  for (let i = 0; i < 3; i++) genres.set(all[Math.floor(rand() * all.length)], 2);
+  for (let i = 0; i < 3; i++) genres.set(all[Math.floor(rand() * all.length)] ?? "Drama", 2);
   return scoreAll(rand, new Set(), genres).slice(0, n);
 }
 
