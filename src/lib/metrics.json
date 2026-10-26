@@ -1,0 +1,41 @@
+{
+  "Global mean": {
+    "test_rmse": 1.2144,
+    "test_mae": 1.0084,
+    "HR10": null,
+    "NDCG10": null
+  },
+  "Item mean": {
+    "test_rmse": 1.0652,
+    "test_mae": 0.8573,
+    "HR10": null,
+    "NDCG10": null
+  },
+  "Matrix factorization (dot product)": {
+    "test_rmse": 0.991,
+    "test_mae": 0.7896,
+    "HR10": 0.293,
+    "NDCG10": 0.157,
+    "config": {
+      "k": 32,
+      "wd": 0.0002
+    },
+    "params": 64119
+  },
+  "NeuMF (GMF + MLP)": {
+    "test_rmse": 0.9685,
+    "test_mae": 0.7682,
+    "HR10": 0.2631,
+    "NDCG10": 0.1407,
+    "config": {
+      "k": 32,
+      "drop": 0.2,
+      "wd": 5e-05
+    },
+    "params": 128952
+  },
+  "Popularity (ranking only)": {
+    "HR10": 0.3609,
+    "NDCG10": 0.1956
+  }
+}
