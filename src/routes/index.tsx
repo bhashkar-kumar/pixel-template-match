@@ -27,7 +27,7 @@ const STEPS = [
 ];
 
 function Home() {
-  const popular = useQuery({ queryKey: ["popular"], queryFn: getPopular });
+  const popular = useQuery({ queryKey: ["popular"], queryFn: () => getPopular() });
   const [selected, setSelected] = useState<Movie | null>(null);
 
   return (
