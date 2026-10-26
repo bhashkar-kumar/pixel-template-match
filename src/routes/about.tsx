@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import metricsJson from "@/lib/metrics.json";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const Route = createFileRoute("/about")({
@@ -14,6 +15,9 @@ export const Route = createFileRoute("/about")({
   }),
   component: About,
 });
+
+type Metric = { test_rmse?: number | null; test_mae?: number | null; HR10?: number | null; NDCG10?: number | null };
+const METRICS = metricsJson as Record<string, Metric>;
 
 const STACK = ["PyTorch", "FastAPI", "React", "TypeScript", "TanStack", "Tailwind CSS", "shadcn/ui"];
 
@@ -62,18 +66,30 @@ function About() {
 
       <section className="space-y-4">
         <h2 className="font-display text-4xl">Results</h2>
-        <div className="rounded-xl border">
+        <p className="text-muted-foreground">Evaluated on a held-out MovieLens 100K test split (943 users, 1,000 movies).</p>
+        <div className="overflow-x-auto rounded-xl border">
           <Table>
             <TableHeader>
-              <TableRow><TableHead>Model</TableHead><TableHead>HR@10</TableHead><TableHead>NDCG@10</TableHead></TableRow>
+              <TableRow><TableHead>Model</TableHead><TableHead>RMSE</TableHead><TableHead>MAE</TableHead><TableHead>HR@10</TableHead><TableHead>NDCG@10</TableHead></TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow><TableCell>Matrix Factorization</TableCell><TableCell>0.640</TableCell><TableCell>0.370</TableCell></TableRow>
-              <TableRow><TableCell className="font-semibold text-primary">NCF (NeuMF)</TableCell><TableCell className="font-semibold">0.690</TableCell><TableCell className="font-semibold">0.410</TableCell></TableRow>
+              {Object.entries(METRICS).map(([name, m]) => {
+                const best = name.startsWith("NeuMF");
+                const f = (v: number | null | undefined) => (v == null ? "—" : v.toFixed(3));
+                return (
+                  <TableRow key={name}>
+                    <TableCell className={best ? "font-semibold text-primary" : ""}>{name}</TableCell>
+                    <TableCell className={best ? "font-semibold" : ""}>{f(m.test_rmse)}</TableCell>
+                    <TableCell className={best ? "font-semibold" : ""}>{f(m.test_mae)}</TableCell>
+                    <TableCell>{f(m.HR10)}</TableCell>
+                    <TableCell>{f(m.NDCG10)}</TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
-        <p className="text-xs text-muted-foreground">Placeholder numbers — replace with your evaluation results.</p>
+        <p className="text-xs text-muted-foreground">NeuMF gives the most accurate rating predictions (lowest RMSE/MAE). Lower RMSE/MAE is better; higher HR/NDCG is better.</p>
       </section>
 
       <section className="space-y-4">

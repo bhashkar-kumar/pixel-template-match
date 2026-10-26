@@ -13,7 +13,7 @@ export function MoviePoster({ movie, className }: { movie: Movie; className?: st
     <div className={cn("relative aspect-[2/3] w-full overflow-hidden rounded-lg bg-muted", className)}>
       {showImg ? (
         <img
-          src={movie.poster_url}
+          src={movie.poster_url ?? undefined}
           alt={`Poster for ${movie.title}`}
           loading="lazy"
           onError={() => setFailed(true)}
