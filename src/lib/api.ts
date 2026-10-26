@@ -9,11 +9,25 @@ export const IS_MOCK = !API_URL;
 const delay = (ms = 400) => new Promise((r) => setTimeout(r, ms));
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    ...init,
-    headers: { "Content-Type": "application/json", ...init?.headers },
-  });
-  if (!res.ok) throw new Error(`Request failed (${res.status})`);
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      ...init,
+      headers: { "Content-Type": "application/json", ...init?.headers },
+    });
+  } catch {
+    throw new Error("Can't reach the CineMatch server. Is it running?");
+  }
+  if (!res.ok) {
+    let detail = "";
+    try {
+      const body = (await res.json()) as { detail?: unknown };
+      detail = typeof body.detail === "string" ? body.detail : "";
+    } catch {
+      /* ignore */
+    }
+    throw new Error(detail || `Request failed (${res.status})`);
+  }
   return res.json() as Promise<T>;
 }
 
@@ -27,24 +41,27 @@ function scoreAll(rand: () => number, exclude: Set<number>, boostGenres: Map<str
   return MOCK_MOVIES.filter((m) => !exclude.has(m.id))
     .map((m) => {
       const boost = m.genres.reduce((acc, g) => acc + (boostGenres.get(g) ?? 0), 0);
-      const score = Math.min(0.99, 0.55 + rand() * 0.3 + boost * 0.05);
+      const quality = ((m.avg_rating ?? 3) - 3) * 0.08;
+      const score = Math.max(0.3, Math.min(0.99, 0.5 + rand() * 0.15 + quality + boost * 0.04));
       return { ...m, score: Math.round(score * 1000) / 1000 };
     })
     .sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
 }
 
 // ---------- public API ----------
-export async function getPopular(): Promise<Movie[]> {
-  if (!IS_MOCK) return request("/movies/popular");
+export async function getPopular(n = 24): Promise<Movie[]> {
+  if (!IS_MOCK) return request(`/movies/popular?n=${n}`);
   await delay();
-  return POPULAR_IDS.map((id) => MOCK_MOVIES.find((m) => m.id === id)).filter(Boolean) as Movie[];
+  return POPULAR_IDS.slice(0, n).map((id) => MOCK_MOVIES.find((m) => m.id === id)).filter(Boolean) as Movie[];
 }
 
-export async function searchMovies(q: string): Promise<Movie[]> {
-  if (!IS_MOCK) return request(`/movies/search?q=${encodeURIComponent(q)}`);
+export async function searchMovies(q: string, n = 30): Promise<Movie[]> {
+  if (!IS_MOCK) return request(`/movies/search?q=${encodeURIComponent(q)}&n=${n}`);
   await delay();
   const term = q.trim().toLowerCase();
-  return MOCK_MOVIES.filter((m) => m.title.toLowerCase().includes(term));
+  return MOCK_MOVIES.filter((m) => m.title.toLowerCase().includes(term))
+    .sort((a, b) => (b.n_ratings ?? 0) - (a.n_ratings ?? 0))
+    .slice(0, n);
 }
 
 export async function getRecommendationsForUser(userId: number, n = 10): Promise<Movie[]> {
@@ -69,16 +86,17 @@ export async function getRecommendationsForNewUser(ratings: Rating[], n = 10): P
   return scoreAll(rand, new Set(ratings.map((r) => r.movie_id)), genres).slice(0, n);
 }
 
-export async function getSimilarMovies(movieId: number): Promise<Movie[]> {
-  if (!IS_MOCK) return request(`/movies/${movieId}/similar`);
+export async function getSimilarMovies(movieId: number, n = 10): Promise<Movie[]> {
+  if (!IS_MOCK) return request(`/movies/${movieId}/similar?n=${n}`);
   await delay();
   const base = MOCK_MOVIES.find((m) => m.id === movieId);
   if (!base) return [];
   return MOCK_MOVIES.filter((m) => m.id !== movieId)
     .map((m) => {
       const shared = m.genres.filter((g) => base.genres.includes(g)).length;
-      return { ...m, score: Math.min(0.98, 0.5 + shared * 0.15) };
+      const pop = Math.min(0.1, (m.n_ratings ?? 0) / 5000);
+      return { ...m, score: Math.min(0.98, 0.45 + shared * 0.13 + pop) };
     })
     .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
-    .slice(0, 8);
+    .slice(0, n);
 }
